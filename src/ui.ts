@@ -25,10 +25,12 @@ function showMainMenu(em:AffairManager) {
   5. Modify an affair
   6. Add an affair to an organization
   7. List affair members
-  8. Exit`);
+  8. Add member to organization
+  9. List organization members
+  10. Exit`);
 
     let response = readlineSync.question('> ')
-    if(response === '8' || response.slice(0,2).toLowerCase() === ':q'){
+    if(response === '10' || response.slice(0,2).toLowerCase() === ':q'){
       break; //stop looping, thus leaving method
     }
 
@@ -40,7 +42,9 @@ function showMainMenu(em:AffairManager) {
       case '5': showModifyAffairMenu(em); break;
       case '6': showAddToOrganizationMenu(em); break;
       case '7': showListAffairMembersMenu(em); break;
-      //case 8 handled above
+      case '8': showAddMemToOrganizationMenu(em); break;
+      case '9': showListOrganizationMembersMenu(em); break;
+      //case 9 handled above
       default: console.log('Invalid option!');
     }
     console.log(''); //extra empty line for revisiting
@@ -181,7 +185,7 @@ function showModifyAffairMenu(em:AffairManager, affairName?:string) {
     let response:number = parseInt(readlineSync.question('> '));
     if(response == 1){
       let newTitle = readlineSync.question('  New title: ');
-      em.modifyAffair(affairName, newTitle);
+      em.modifyAffair(affairName, newTitle, undefined);
     }
     else if(response == 2){
       let newTime = readlineSync.question('  New date and time (ex: Jan 21 2017 13:00 PST): ');
@@ -228,3 +232,33 @@ function showListAffairMembersMenu(em:AffairManager) {
 
   readlineSync.keyInPause('(Press any letter to continue)', {guide:false}); //so have time to read stuff
 }
+
+function showAddMemToOrganizationMenu(em:AffairManager, organizationName?:string) {
+  if(!organizationName){
+    organizationName = showSearchOrganizationsMenu(em);
+    if(!organizationName){ return }//if didn't select an organization
+  }
+
+  let adding = readlineSync.question('Add a member to organization? (y/n): ');
+  while(adding.toLowerCase().startsWith('y')){ //while adding members    
+    let memberName = showSearchMembersMenu(em); //find a member
+    if(memberName){ //if selected someone
+      em.addMemberToOrganization(memberName, organizationName);
+    } else {
+      console.log('No member selected.')
+    }
+    adding = readlineSync.question('Add another member? (y/n): ');
+  }
+}
+
+function showListOrganizationMembersMenu(em: AffairManager) {
+  let organizationName = showSearchOrganizationsMenu(em);
+  
+    let members = em.getMembersOfOrg(organizationName);
+  
+    console.log('Members participating in this organization:')
+    console.log('  '+members.join('\n  ')+'\n');
+  
+    readlineSync.keyInPause('(Press any letter to continue)', {guide:false}); //so have time to read stuff  
+}
+
